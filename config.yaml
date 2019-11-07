@@ -1,0 +1,29 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - basicSSHUserPrivateKey:
+          scope: SYSTEM
+          id: ssh-agent
+          username: jenkins
+          privateKeySource:
+            directEntry:
+              privateKey: '${ssh_private_key}'
+jenkins:
+  numExecutors: 0
+  nodes:
+  - permanent:
+      name: 'docker-static'
+      labelString: 'linux docker'
+      numExecutors: 2
+      remoteFS: '/home/jenkins'
+      launcher:
+        ssh:
+          host: agent
+          port: 22
+          credentialsId: ssh-agent
+          # FIXME: JAVA_HOME is defined properly, but not PATH
+          javaPath: '/usr/local/openjdk-8/bin/java'
+          sshHostKeyVerificationStrategy:
+            manuallyTrustedKeyVerificationStrategy:
+              requireInitialManualTrust: true

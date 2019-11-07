@@ -1,0 +1,46 @@
+version: '3.7'
+services:
+  jenkins:
+    build: ./jenkins
+    ports:
+      - '8080:8080'
+    environment:
+      JAVA_OPTS: '-Djava.awt.headless=true'
+    volumes:
+      - 'jenkins-home:/var/jenkins_home'
+      - './config.yaml:/var/jenkins_home/jenkins.yaml:ro'
+    secrets:
+      - ssh_private_key
+  agent:
+    build: ./agent
+    command: ['/usr/local/bin/wait-for-it.sh', 'docker:2376', '--', 'setup-sshd']
+    expose:
+      - '22'
+    environment:
+      DOCKER_TLS_CERTDIR: '/certs'
+      DOCKER_HOST: 'tcp://docker:2376'
+      DOCKER_TLS_VERIFY: 1
+      JENKINS_SLAVE_SSH_PUBKEY: 'ssh public key data here'
+    volumes:
+      - 'docker-certs-client:/certs/client:ro'
+      - 'agent-home:/home/jenkins'
+    depends_on:
+      - 'docker'
+  docker:
+    image: docker:dind
+    privileged: true
+    expose:
+      - '2376'
+    environment:
+      DOCKER_TLS_CERTDIR: '/certs'
+    volumes:
+      - 'docker-certs-ca:/certs/ca'
+      - 'docker-certs-client:/certs/client'
+volumes:
+  jenkins-home: {}
+  agent-home: {}
+  docker-certs-client: {}
+  docker-certs-ca: {}
+secrets:
+  ssh_private_key:
+    file: $HOME/.ssh/id_rsa
