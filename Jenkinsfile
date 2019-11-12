@@ -1,15 +1,9 @@
 pipeline {
-  agent {
-    docker {
-      image 'docker/compose:1.24.1'
-      args 'build'
-    }
-
-  }
+  agent any
   stages {
     stage('Build') {
       steps {
-        sh 'build'
+        sh 'docker run --rm -v $PWD:/src docker/compose:1.24.1 -f /src/docker-compose.yml build'
       }
     }
 
