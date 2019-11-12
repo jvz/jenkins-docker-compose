@@ -3,8 +3,8 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh '''env
-docker -H tcp://docker:2376 build -f Dockerfile.build .'''
+        sh 'docker build -t jenkins-compose-build .'
+        sh 'docker run --rm jenkins-compose-build build'
       }
     }
 
